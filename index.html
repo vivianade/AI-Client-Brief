@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Turn one client idea into a structured AI project plan.">
+  <title>AI Client Brief</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  <div class="ambient-background" aria-hidden="true"><i></i><i></i></div>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <button class="brand" id="brand-home" type="button" aria-label="返回新建项目">
+        <span class="brand-mark" aria-hidden="true"><i></i></span>
+        <strong>AI CLIENT BRIEF</strong>
+      </button>
+      <nav class="header-actions" aria-label="主导航">
+        <span class="system-status"><i aria-hidden="true"></i>AI READY</span>
+        <button class="history-button" id="history-button" type="button">
+          <span>History</span>
+          <span class="count-badge" id="history-count" aria-label="项目数量">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div id="storage-alert" class="global-alert" role="alert" hidden>
+    <span id="storage-alert-text">浏览器存储不可用，项目将无法保存。</span>
+    <button id="dismiss-storage-alert" type="button" aria-label="关闭提示">×</button>
+  </div>
+
+  <main id="main-content">
+    <section id="workspace-view" class="view workspace-view" aria-labelledby="workspace-title">
+      <div class="workspace-heading">
+        <div class="hero-copy">
+          <p class="eyebrow" id="workspace-kicker">AI PROJECT INTELLIGENCE</p>
+          <h1 id="workspace-title">Turn an Idea Into an AI Plan</h1>
+          <p class="hero-subtitle">Describe what your client needs.<br>AI will turn it into a structured project brief.</p>
+        </div>
+        <button class="text-button back-history-button" type="button" hidden>← Back to history</button>
+      </div>
+
+      <section class="brief-composer" aria-labelledby="form-title">
+        <div class="composer-heading">
+          <div>
+            <span class="section-index">01 / INPUT</span>
+            <h2 id="form-title">What does your client need?</h2>
+          </div>
+          <label class="status-field">
+            <span>Status</span>
+            <select id="project-status" name="status">
+              <option>待沟通</option>
+              <option>方案中</option>
+              <option>执行中</option>
+              <option>已完成</option>
+            </select>
+          </label>
+        </div>
+
+        <form id="brief-form" novalidate>
+          <div class="primary-inputs">
+            <label class="field project-name-field" for="project-name">
+              <span>Project / Client <em>Required</em></span>
+              <input id="project-name" name="name" type="text" autocomplete="organization" placeholder="e.g. Nova Education AI Advisor" maxlength="120" required>
+              <small class="field-error" data-error-for="name"></small>
+            </label>
+
+            <label class="field idea-field" for="problem">
+              <span>Describe the client idea <em>Required</em></span>
+              <textarea id="problem" name="problem" rows="6" placeholder="What is happening today? What is difficult, slow, expensive, or inconsistent?" maxlength="1800" required></textarea>
+              <small class="field-error" data-error-for="problem"></small>
+            </label>
+          </div>
+
+          <div class="details-label"><span>Context</span><i></i></div>
+          <div class="form-grid">
+            <label class="field" for="industry">
+              <span>Industry <em>Required</em></span>
+              <input id="industry" name="industry" type="text" placeholder="e.g. Education" maxlength="80" required>
+              <small class="field-error" data-error-for="industry"></small>
+            </label>
+            <label class="field" for="audience">
+              <span>Target users <em>Required</em></span>
+              <input id="audience" name="audience" type="text" placeholder="Who will use the solution?" maxlength="160" required>
+              <small class="field-error" data-error-for="audience"></small>
+            </label>
+            <label class="field field-full" for="ai-goal">
+              <span>What should AI help with? <em>Required</em></span>
+              <textarea id="ai-goal" name="aiGoal" rows="3" placeholder="Describe the task, decision, or output AI should support" maxlength="1800" required></textarea>
+              <small class="field-error" data-error-for="aiGoal"></small>
+            </label>
+            <label class="field" for="budget">
+              <span>Budget <i>Optional</i></span>
+              <input id="budget" name="budget" type="text" placeholder="e.g. ¥50,000" maxlength="100">
+            </label>
+            <label class="field" for="deadline">
+              <span>Timeline <i>Optional</i></span>
+              <input id="deadline" name="deadline" type="text" placeholder="e.g. First version in 6 weeks" maxlength="120">
+            </label>
+            <label class="field field-full" for="other">
+              <span>Constraints or notes <i>Optional</i></span>
+              <textarea id="other" name="other" rows="2" placeholder="Existing systems, data, deployment, compliance or brand requirements" maxlength="1800"></textarea>
+            </label>
+          </div>
+
+          <div id="form-alert" class="inline-alert" role="alert" hidden></div>
+          <div class="form-actions">
+            <button class="primary-action" id="generate-button" type="submit">
+              <span class="button-label">Analyze with AI</span>
+              <span class="button-arrow" aria-hidden="true">↗</span>
+              <span class="button-spinner" aria-hidden="true"></span>
+            </button>
+            <button class="secondary-action" id="save-button" type="button">Save project</button>
+            <span class="save-note" id="save-note" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="result-panel" aria-labelledby="result-title">
+        <div class="result-heading">
+          <div>
+            <span class="section-index">02 / OUTPUT</span>
+            <h2 id="result-title">AI Project Brief</h2>
+          </div>
+          <span class="result-status" id="result-status" hidden></span>
+        </div>
+
+        <div id="result-empty" class="empty-state">
+          <div class="empty-orbit" aria-hidden="true"><i></i><span>AI</span></div>
+          <h3>Your project plan will appear here</h3>
+          <p>Give AI enough context to understand the client, the problem, and the intended outcome.</p>
+        </div>
+
+        <div id="result-loading" class="loading-state" hidden aria-live="polite">
+          <div class="analysis-core" aria-hidden="true"><span>AI</span><i></i><i></i></div>
+          <div class="analysis-progress">
+            <span class="section-index">ANALYSIS IN PROGRESS</span>
+            <h3>Building your project intelligence</h3>
+            <ol>
+              <li style="--stage: 0"><i></i>Understanding the client</li>
+              <li style="--stage: 1"><i></i>Analyzing the problem</li>
+              <li style="--stage: 2"><i></i>Finding missing information</li>
+              <li style="--stage: 3"><i></i>Designing the solution</li>
+              <li style="--stage: 4"><i></i>Building the project plan</li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="result-error" class="error-state" hidden role="alert">
+          <span class="error-symbol" aria-hidden="true">!</span>
+          <div><h3>AI analysis could not be completed</h3><p id="result-error-detail"></p></div>
+          <button class="secondary-action" id="retry-button" type="button">Try again</button>
+        </div>
+
+        <div id="result-content" hidden>
+          <div class="result-intro">
+            <span><i></i>ANALYSIS COMPLETE</span>
+            <p>AI generated this plan from the information provided. Verify key facts before presenting it to the client.</p>
+          </div>
+          <div id="result-modules"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="history-view" class="view history-view" aria-labelledby="history-title" hidden>
+      <div class="page-heading">
+        <div><p class="eyebrow">PROJECT MEMORY</p><h1 id="history-title">History</h1><p>Saved in this browser.</p></div>
+        <button class="primary-action" id="new-project-button" type="button">New project <span>＋</span></button>
+      </div>
+      <div id="history-empty" class="history-empty" hidden><span>00</span><h2>No saved projects</h2><p>Your saved client briefs will appear here.</p></div>
+      <div id="history-list" class="history-list" aria-live="polite"></div>
+    </section>
+
+    <section id="detail-view" class="view detail-view" aria-labelledby="detail-title" hidden>
+      <div class="detail-toolbar">
+        <button class="text-button" id="detail-back-button" type="button">← Back to history</button>
+        <div class="detail-actions">
+          <button class="secondary-action" id="detail-edit-button" type="button">Edit project</button>
+          <button class="danger-action" id="detail-delete-button" type="button">Delete</button>
+        </div>
+      </div>
+      <article id="detail-content"></article>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="confirm-modal" hidden>
+    <section class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-description">
+      <span class="error-symbol" aria-hidden="true">!</span>
+      <h2 id="confirm-title">Delete project?</h2>
+      <p id="confirm-description">确定要删除这个项目吗？删除后无法恢复。</p>
+      <div class="modal-actions">
+        <button class="text-button" id="confirm-cancel" type="button">Cancel</button>
+        <button class="danger-action" id="confirm-delete" type="button">Delete</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

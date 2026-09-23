@@ -1,0 +1,11 @@
+{
+  "name": "ai-client-brief-v1",
+  "version": "2.0.0",
+  "private": true,
+  "description": "AI 客户需求整理器 V2",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node tests/e2e.js"
+  }
+}
