@@ -384,10 +384,11 @@ function createServer(options = {}) {
 
 if (require.main === module) {
   loadEnvFile(path.join(root, ".env"));
-  const port = Number(process.argv[2]) || Number(process.env.PORT) || 4173;
+  const port = Number(process.env.PORT) || Number(process.argv[2]) || 4173;
+  const host = process.env.HOST || "127.0.0.1";
   const server = createServer();
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`AI Client Brief V2 running at http://127.0.0.1:${port}`);
+  server.listen(port, host, () => {
+    console.log(`AI Client Brief V2 running at http://${host}:${port}`);
   });
 }
 

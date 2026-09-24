@@ -85,9 +85,10 @@ async function run() {
     stdio: ["ignore", "pipe", "pipe"],
     env: {
       ...process.env,
-      OPENAI_API_KEY: "e2e-test-key",
-      OPENAI_MODEL: "e2e-test-model",
-      OPENAI_BASE_URL: `http://127.0.0.1:${mockAddress.port}`
+      AI_API_KEY: "e2e-test-key",
+      AI_MODEL: "e2e-test-model",
+      AI_API_URL: `http://127.0.0.1:${mockAddress.port}`,
+      AI_API_MODE: "responses"
     }
   });
   await waitForServer();
