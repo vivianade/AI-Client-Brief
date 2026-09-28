@@ -47,7 +47,7 @@ test("前五个字段逐项校验并指出具体字段", () => {
     const result = validateRequired(data);
     assert.equal(result.valid, false);
     assert.equal(result.field, field.key);
-    assert.equal(result.message, `请填写「${field.label}」。`);
+    assert.equal(result.message, `请填写${field.label}`);
   }
 });
 

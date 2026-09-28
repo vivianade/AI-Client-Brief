@@ -68,12 +68,17 @@ function findBrowser() {
   return candidates.find((candidate) => fs.existsSync(candidate));
 }
 
-async function fillRequiredFields(page) {
+async function completeWizard(page, values = {}) {
   await page.locator("#project-name").fill("星河教育 AI 招生咨询项目");
   await page.locator("#industry").fill("职业教育");
+  await page.locator('[data-next-step="2"]').click();
   await page.locator("#problem").fill("人工每天重复回答大量课程和报名问题，回复口径不一致。");
+  await page.locator('[data-next-step="3"]').click();
   await page.locator("#audience").fill("咨询课程的在职人士");
   await page.locator("#ai-goal").fill("整理课程知识，并为客服生成准确的回复建议。");
+  await page.locator('[data-next-step="4"]').click();
+  if (values.status) await page.locator("#project-status").selectOption(values.status);
+  await page.locator('[data-next-step="5"]').click();
 }
 
 async function run() {
@@ -97,23 +102,28 @@ async function run() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
   const pageErrors = [];
+  const consoleErrors = [];
   const externalRequests = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (url.origin !== baseUrl) externalRequests.push(request.url());
   });
 
   await page.goto(baseUrl);
-  assert.equal(await page.title(), "AI Client Brief");
+  assert.equal(await page.title(), "AI 客户需求整理器");
   assert.equal(await page.locator("#brief-form input, #brief-form textarea").count(), 8);
-  assert.match(await page.locator(".brand").textContent(), /AI CLIENT BRIEF/);
+  assert.match(await page.locator(".brand").textContent(), /AI 客户需求整理器/);
+  assert.equal(await page.locator(".app-sidebar").isVisible(), true);
 
-  await page.locator("#generate-button").click();
-  assert.equal(await page.locator("#form-alert").textContent(), "请填写「项目 / 客户名称」。");
+  await page.locator('[data-next-step="2"]').click();
+  assert.equal(await page.locator('[data-error-for="name"]').textContent(), "请填写项目名称 / 客户名称");
   assert.equal(await page.locator(":focus").getAttribute("id"), "project-name");
 
-  await fillRequiredFields(page);
+  await completeWizard(page);
   await page.evaluate(() => {
     const button = document.getElementById("generate-button");
     button.click();
@@ -121,11 +131,14 @@ async function run() {
   });
   assert.equal(await page.locator("#generate-button").isDisabled(), true);
   assert.equal(await page.locator("#result-loading").isVisible(), true);
-  assert.match(await page.locator("#result-loading h3").textContent(), /Building your project intelligence/);
+  assert.match(await page.locator("#result-loading h3").textContent(), /正在把客户需求整理成项目方案/);
 
   await page.locator("#result-content").waitFor({ state: "visible" });
-  assert.equal(await page.locator("#result-modules .result-module").count(), 7);
-  assert.match(await page.locator("#result-content .result-intro").textContent(), /ANALYSIS COMPLETE/);
+  assert.equal(await page.locator("#result-modules .result-module").count(), 8);
+  assert.match(await page.locator("#result-content .result-notice").textContent(), /AI 初步方案/);
+  assert.match(await page.locator("#result-modules").textContent(), /客户真正想解决的问题/);
+  assert.match(await page.locator("#result-modules").textContent(), /项目难度/);
+  assert.match(await page.locator("#result-modules").textContent(), /AI 可以承担哪些工作/);
   assert.match(await page.locator("#result-modules").textContent(), /项目预算大概是多少/);
   assert.match(await page.locator("#result-modules").textContent(), /希望什么时候完成第一版/);
   assert.equal(externalRequests.length, 0);
@@ -133,7 +146,7 @@ async function run() {
   await page.waitForTimeout(900);
   await page.screenshot({ path: path.resolve(__dirname, "desktop-result.png"), fullPage: true });
 
-  await page.locator("#save-button").click();
+  await page.locator("#result-save-button").click();
   await page.locator(".toast", { hasText: "项目已保存。" }).waitFor();
   let stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ai-client-brief-v1-projects")));
   assert.equal(stored.length, 1);
@@ -141,7 +154,9 @@ async function run() {
   assert.equal(stored[0].budget, "");
   assert.equal(stored[0].deadline, "");
 
+  await page.locator('[data-flow-step="4"] button').click();
   await page.locator("#project-status").selectOption("执行中");
+  await page.locator('[data-flow-step="5"] button').click();
   await page.locator("#save-button").click();
   stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ai-client-brief-v1-projects")));
   assert.equal(stored.length, 1);
@@ -150,13 +165,23 @@ async function run() {
 
   await page.locator("#history-button").click();
   assert.equal(await page.locator(".history-card").count(), 1);
+  await page.locator(".history-status-select").selectOption("方案完成");
+  stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ai-client-brief-v1-projects")));
+  assert.equal(stored[0].status, "方案完成");
+  await page.locator("#history-search").fill("职业教育");
+  assert.equal(await page.locator(".history-card").count(), 1);
+  await page.locator("#history-search").fill("不存在的项目");
+  assert.match(await page.locator("#history-list").textContent(), /没有找到匹配的项目/);
+  await page.locator("#history-search").fill("");
   await page.locator('.history-card-actions button[data-action="view"]').click();
   assert.match(await page.locator("#detail-content").textContent(), /星河教育 AI 招生咨询项目/);
-  assert.match(await page.locator("#detail-content").textContent(), /由 AI/);
+  assert.match(await page.locator("#detail-content").textContent(), /AI 根据当前信息生成/);
 
   await page.locator("#detail-edit-button").click();
+  await page.locator('[data-flow-step="2"] button').click();
   await page.locator("#problem").fill("人工重复答疑且夜间无法及时回复，口径也不一致。");
-  assert.match(await page.locator("#result-status").textContent(), /INPUT CHANGED/);
+  assert.match(await page.locator("#result-status").textContent(), /需求已修改/);
+  await page.locator('[data-flow-step="5"] button').click();
   await page.locator("#generate-button").click();
   await page.locator("#result-content").waitFor({ state: "visible" });
   assert.match(await page.locator("#result-modules").textContent(), /夜间无法及时回复/);
@@ -168,9 +193,13 @@ async function run() {
   await page.locator("#brand-home").click();
   await page.locator("#project-name").fill("青山餐饮门店报表项目");
   await page.locator("#industry").fill("连锁餐饮");
+  await page.locator('[data-next-step="2"]').click();
   await page.locator("#problem").fill("门店日报靠人工汇总，容易遗漏。");
+  await page.locator('[data-next-step="3"]').click();
   await page.locator("#audience").fill("区域经理");
   await page.locator("#ai-goal").fill("自动汇总门店日报并标记异常。");
+  await page.locator('[data-next-step="4"]').click();
+  await page.locator('[data-next-step="5"]').click();
   await page.locator("#save-button").click();
   stored = await page.evaluate(() => JSON.parse(localStorage.getItem("ai-client-brief-v1-projects")));
   assert.equal(stored.length, 2);
@@ -195,9 +224,12 @@ async function run() {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(baseUrl);
   assert.equal(await page.locator("#workspace-view").isVisible(), true);
-  assert.equal(await page.locator(".brand").isVisible(), true);
+  assert.equal(await page.locator(".mobile-header").isVisible(), true);
   assert.equal(await page.locator("body").evaluate((node) => node.scrollWidth <= node.clientWidth), true);
   await page.screenshot({ path: path.resolve(__dirname, "mobile-initial.png"), fullPage: true });
+  await page.locator("#mobile-projects-button").click();
+  assert.equal(await page.locator(".history-card").count(), 1);
+  assert.equal(await page.locator("body").evaluate((node) => node.scrollWidth <= node.clientWidth), true);
 
   const blockedContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   await blockedContext.addInitScript(() => {
@@ -216,6 +248,7 @@ async function run() {
   await blockedContext.close();
 
   assert.equal(pageErrors.length, 0, `页面错误：${pageErrors.join("; ")}`);
+  assert.equal(consoleErrors.length, 0, `控制台错误：${consoleErrors.join("; ")}`);
   assert.equal(externalRequests.length, 0, `检测到外部请求：${externalRequests.join("; ")}`);
   await context.close();
   await browser.close();

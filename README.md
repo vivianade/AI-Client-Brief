@@ -1,4 +1,4 @@
-# AI Client Brief
+# AI 客户需求整理器
 
 把客户需求转成结构化 AI 项目方案，并在浏览器中保存历史项目。
 
@@ -26,9 +26,9 @@ node server.js
 
 ## 第三步：测试 AI
 
-1. 填完页面中标有 `Required` 的内容。
-2. 点击 `Analyze with AI`。
-3. 出现 `ANALYSIS COMPLETE` 和 01–07 七段结果，表示 AI 已接通。
+1. 填完页面中标有“必填”的内容。
+2. 点击“AI 智能分析”。
+3. 页面出现 8 个 AI 分析区域，表示 AI 已接通。
 
 如果修改过 `.env`，请先关闭正在运行的服务，再重新执行 `node server.js`。
 

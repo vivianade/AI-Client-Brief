@@ -9,7 +9,7 @@
   "use strict";
 
   const STORAGE_KEY = "ai-client-brief-v1-projects";
-  const PROJECT_STATUSES = ["待沟通", "方案中", "执行中", "已完成"];
+  const PROJECT_STATUSES = ["待沟通", "方案中", "方案完成", "执行中", "已完成"];
   const REQUIRED_FIELDS = [
     { key: "name", label: "项目 / 客户名称" },
     { key: "industry", label: "客户行业" },
@@ -44,7 +44,7 @@
     return {
       valid: false,
       field: missing.key,
-      message: `请填写「${missing.label}」。`
+      message: `请填写${missing.label}`
     };
   }
 
