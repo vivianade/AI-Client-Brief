@@ -38,4 +38,24 @@ node server.js
 node --test tests/*.test.js
 ```
 
+## Render 部署
+
+在 Render 创建 Web Service 后填写：
+
+```text
+Build Command: npm install
+Start Command: npm start
+```
+
+在 Render 的 Environment 中配置：
+
+```text
+HOST=0.0.0.0
+AI_API_URL=你的 API 地址
+AI_API_KEY=你的 API Key
+AI_MODEL=你的模型名称
+```
+
+`PORT` 由 Render 自动提供，不需要手动填写。本地未配置 `HOST` 时，服务仍默认监听 `127.0.0.1:4173`。
+
 历史项目继续使用 V1 的浏览器存储，不需要迁移。
